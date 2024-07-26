@@ -1,5 +1,12 @@
-# Video-Stream
-Video-Stream is wrapper that can handle multi-source of streams
+# X-Stream
+X-Stream is a multi-source stream with a unified interface
+
+# Currently Supported
+- [x] RTSP streams 
+- [x] Youtube streams 
+- [x] Internal/USB camera streams 
+- [x] Local video/image streams 
+- [ ] ... others to be supported 
 
 ---
 
