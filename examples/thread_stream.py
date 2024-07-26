@@ -36,7 +36,7 @@ from threading import Thread, Event
 from collections import deque
 from time import time
 
-from VideoStream import VideoStream
+from xstream import XStream
 
 ## #############################################################################
 ## #### Private Type(s) ########################################################
@@ -136,7 +136,7 @@ if __name__ == "__main__":
     
         def run(self):
             print(f"Thread `{self.name}` handling source `{self.source}` Started")                
-            stream = VideoStream(self.source)
+            stream = XStream(self.source)
             if stream.open():
                 average_window = 0
                 time_start = time()

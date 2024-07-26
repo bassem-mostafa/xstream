@@ -30,21 +30,8 @@ Copyright 2024 BaSSeM
 ## #### Import(s) ##############################################################
 ## #############################################################################
 
-import cv2
-import pafy
-
-from io import StringIO
-from pathlib import Path
-
-from .Stream import Stream as _Stream
-from .Camera import Camera as _Camera
-from .RTSP import RTSP as _RTSP
-from .HTTP import HTTP as _HTTP
-from .HTTPS import HTTPS as _HTTPS
-from .Image import Image as _Image
-from .Video import Video as _Video
-
-from .XStream import XStream
+from xstream import cv2
+from xstream import _Stream
 
 ## #############################################################################
 ## #### Private Type(s) ########################################################
@@ -69,6 +56,42 @@ from .XStream import XStream
 ## #############################################################################
 ## #### Public Type(s) #########################################################
 ## #############################################################################
+
+class RTSP(_Stream):
+    def __init__(self, source):
+        super().__init__(source)
+        if not isinstance(self._source, str) and self._source.find(f"rtsp://", 0, len(f"rtsp://")) != -1:
+            raise RuntimeError(f"Not supported {self.__class__.__name__} source-type `{type(self._source)}`")
+        self._type = "RTSP"
+        self._specifications["frame-rate"] = None
+        self._specifications["frame-width"] = None
+        self._specifications["frame-height"] = None
+        self._specifications["frame-channels"] = None
+    def open(self, mode="r"):
+        if mode not in ["r"]:
+            raise ValueError(f"Not supported operation `open` for mode `{mode}` for stream source `{self._source}`")
+        self._mode = mode
+        self._content = cv2.VideoCapture(str(self._source))
+        self._specifications["frame-rate"] = self._content.get(cv2.CAP_PROP_FPS)
+        self._specifications["frame-width"] = self._content.get(cv2.CAP_PROP_FRAME_WIDTH)
+        self._specifications["frame-height"] = self._content.get(cv2.CAP_PROP_FRAME_HEIGHT)
+        self._specifications["frame-channels"] = self._content.get(cv2.CAP_PROP_VIDEO_TOTAL_CHANNELS)
+        return self._content.isOpened()
+    def close(self):
+        self._content.release()
+        self._content = None
+        return True
+    def read(self):
+        if self._mode not in ["r"]:
+            raise RuntimeError(f"Not supported operation `read` for mode `{self._mode}` for stream source `{self._source}`")
+        status, frame = self._content.read()
+        if not status:
+            frame = None
+        return frame
+    def write(self):
+        if self._mode not in []:
+            raise RuntimeError(f"Not supported operation `write` for mode `{self._mode}` for stream source `{self._source}`")
+        return False
 
 ## #############################################################################
 ## #### Public Method(s) #######################################################

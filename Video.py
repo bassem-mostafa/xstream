@@ -30,21 +30,9 @@ Copyright 2024 BaSSeM
 ## #### Import(s) ##############################################################
 ## #############################################################################
 
-import cv2
-import pafy
-
-from io import StringIO
-from pathlib import Path
-
-from .Stream import Stream as _Stream
-from .Camera import Camera as _Camera
-from .RTSP import RTSP as _RTSP
-from .HTTP import HTTP as _HTTP
-from .HTTPS import HTTPS as _HTTPS
-from .Image import Image as _Image
-from .Video import Video as _Video
-
-from .XStream import XStream
+from xstream import cv2
+from xstream import Path
+from xstream import _Stream
 
 ## #############################################################################
 ## #### Private Type(s) ########################################################
@@ -69,6 +57,60 @@ from .XStream import XStream
 ## #############################################################################
 ## #### Public Type(s) #########################################################
 ## #############################################################################
+
+class Video(_Stream):
+    def __init__(self, source):
+        super().__init__(source)
+        if not isinstance(self._source, (str, Path)):
+            raise RuntimeError(f"Not supported {self.__class__.__name__} source-type `{type(self._source)}`")
+        extension = Path(self._source).suffix[1:].lower()
+        if extension not in ["mp4", "avi"]:
+            raise RuntimeError(f"Not supported {self.__class__.__name__} source `{self._source}` with extension `{extension}`")
+        self._type = "Media/Video"
+        self._specifications["frame-rate"] = None
+        self._specifications["frame-count"] = None
+        self._specifications["frame-width"] = None
+        self._specifications["frame-height"] = None
+        self._specifications["frame-channels"] = None
+    def open(self, mode="r"):
+        if mode not in ["r", "w"]:
+            raise ValueError(f"Not supported operation `open` for mode `{mode}` for stream source `{self._source}`")
+        self._mode = mode
+        if self._mode in ["r"]:
+            self._content = cv2.VideoCapture(str(self._source))
+            self._specifications["frame-rate"] = self._content.get(cv2.CAP_PROP_FPS)
+            self._specifications["frame-count"] = self._content.get(cv2.CAP_PROP_FRAME_COUNT)
+            self._specifications["frame-width"] = self._content.get(cv2.CAP_PROP_FRAME_WIDTH)
+            self._specifications["frame-height"] = self._content.get(cv2.CAP_PROP_FRAME_HEIGHT)
+            self._specifications["frame-channels"] = self._content.get(cv2.CAP_PROP_VIDEO_TOTAL_CHANNELS)
+        elif self._mode in ["w"]:
+            # TODO Handle un-set required specifications
+            self._content = cv2.VideoWriter(
+                                           filename = str(self._source),
+                                           fourcc = cv2.VideoWriter_fourcc(*"mp4v"),
+                                           fps = self._specifications["frame-rate"],
+                                           frameSize = (self._specifications["frame-width"], self._specifications["frame-height"]),
+                                           )
+        return self._content.isOpened()
+    def close(self):
+        self._content.release()
+        self._content = None
+    def get(self, **kwarg):
+        ... # TODO complete get procedure
+    def set(self, **kwarg):
+        ... # TODO complete set procedure
+    def read(self):
+        if self._mode not in ["r"]:
+            raise RuntimeError(f"Not supported operation `read` for mode `{self._mode}` for stream source `{self._source}`")
+        status, frame = self._content.read()
+        if not status:
+            frame = None
+        return frame
+    def write(self, frame):
+        if self._mode not in ["w"]:
+            raise RuntimeError(f"Not supported operation `write` for mode `{self._mode}` for stream source `{self._source}`")
+        self._content.write(frame)
+        return frame
 
 ## #############################################################################
 ## #### Public Method(s) #######################################################

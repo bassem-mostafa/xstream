@@ -22,6 +22,10 @@ Copyright 2024 BaSSeM
 ## #### Description ############################################################
 ## #############################################################################
 
+'''
+X-Stream class wraps various stream sources into unified interface
+'''
+
 ## #############################################################################
 ## #### Control Variable(s) ####################################################
 ## #############################################################################
@@ -30,21 +34,15 @@ Copyright 2024 BaSSeM
 ## #### Import(s) ##############################################################
 ## #############################################################################
 
-import cv2
-import pafy
+from xstream import Path
 
-from io import StringIO
-from pathlib import Path
-
-from .Stream import Stream as _Stream
-from .Camera import Camera as _Camera
-from .RTSP import RTSP as _RTSP
-from .HTTP import HTTP as _HTTP
-from .HTTPS import HTTPS as _HTTPS
-from .Image import Image as _Image
-from .Video import Video as _Video
-
-from .XStream import XStream
+from xstream import _Stream
+from xstream import _Camera
+from xstream import _RTSP
+from xstream import _HTTP
+from xstream import _HTTPS
+from xstream import _Image
+from xstream import _Video
 
 ## #############################################################################
 ## #### Private Type(s) ########################################################
@@ -70,6 +68,38 @@ from .XStream import XStream
 ## #### Public Type(s) #########################################################
 ## #############################################################################
 
+class XStream:
+    def __init__(self, source):
+        self._stream = _Stream(source) # Abstract Stream
+        if isinstance(source, int):
+            self._stream = _Camera(source)
+        elif isinstance(source, str) and source.find(f"rtsp://", 0, len(f"rtsp://")) != -1:
+            self._stream = _RTSP(source)
+        elif isinstance(source, str) and source.find(f"http://", 0, len(f"http://")) != -1:
+            self._stream = _HTTP(source)
+        elif isinstance(source, str) and source.find(f"https://", 0, len(f"https://")) != -1:
+            self._stream = _HTTPS(source)
+        elif isinstance(source, (str, Path)):
+            extension = Path(source).suffix[1:].lower()
+            if extension in ["jpg", "jpeg", "jpe", "bmp", "png", "pbm", "pgm", "ppm", "pxm", "pnm"]:
+                self._stream = _Image(source)
+            elif extension in ["mp4", "avi"]:
+                self._stream = _Video(source)
+    def __iter__(self):
+        return self._stream.__iter__()
+    def __next__(self):
+        return self._stream.__next__()
+    def __repr__(self):
+        return self._stream.__repr__()
+    def open(self, mode="r"):
+        return self._stream.open(mode)
+    def read(self):
+        return self._stream.read()
+    def write(self, frame):
+        return self._stream.write(frame)
+    def close(self):
+        return self._stream.close()
+
 ## #############################################################################
 ## #### Public Method(s) #######################################################
 ## #############################################################################
@@ -84,7 +114,7 @@ from .XStream import XStream
 
 if __name__ == "__main__":
     ...
-    
+
 ## #############################################################################
 ## #### END OF FILE ############################################################
 ## #############################################################################
