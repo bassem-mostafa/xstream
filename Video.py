@@ -74,23 +74,6 @@ class Video(_Stream):
         self._specifications["frame-channels"] = None
     def __len__(self):
         return int(self._content.get(cv2.CAP_PROP_FRAME_COUNT))
-    def __getitem__(self, key):
-        if isinstance(key, int):
-            self._content.set(cv2.CAP_PROP_POS_FRAMES, key)
-            return self.read()
-        elif isinstance(key, slice):
-            def frames_generator(start, stop, step):
-                for i in range(start, stop, step):
-                    self._content.set(cv2.CAP_PROP_POS_FRAMES, i)
-                    yield self.read()
-            start = key.start if key.start is not None else 0
-            stop = key.stop if key.stop is not None else int(self._content.get(cv2.CAP_PROP_FRAME_COUNT))
-            step = key.step if key.step is not None else 1
-            frames_generator.__len__ = lambda : (stop - start) / step
-            return frames_generator(start, stop, step)
-        else:
-            raise RuntimeError(f"Not supported {self.__class__.__name__} operation `__getitem__` for stream source `{self._source}`")
-        return None
     def open(self, mode="r"):
         if mode not in ["r", "w"]:
             raise ValueError(f"Not supported operation `open` for mode `{mode}` for stream source `{self._source}`")
@@ -114,10 +97,8 @@ class Video(_Stream):
     def close(self):
         self._content.release()
         self._content = None
-    def get(self, **kwarg):
-        ... # TODO complete get procedure
-    def set(self, **kwarg):
-        ... # TODO complete set procedure
+    def seek(self, index):
+        return self._content.set(cv2.CAP_PROP_POS_FRAMES, index)
     def read(self):
         if self._mode not in ["r"]:
             raise RuntimeError(f"Not supported operation `read` for mode `{self._mode}` for stream source `{self._source}`")

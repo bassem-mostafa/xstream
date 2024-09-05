@@ -97,12 +97,14 @@ class XStream:
         return self._stream.__repr__()
     def open(self, mode="r"):
         return self._stream.open(mode)
+    def close(self):
+        return self._stream.close()
+    def seek(self, index):
+        return self._stream.seek(index)
     def read(self):
         return self._stream.read()
     def write(self, frame):
         return self._stream.write(frame)
-    def close(self):
-        return self._stream.close()
 
 ## #############################################################################
 ## #### Public Method(s) #######################################################

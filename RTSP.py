@@ -83,6 +83,8 @@ class RTSP(_Stream):
         self._content.release()
         self._content = None
         return True
+    def seek(self, index):
+        return False
     def read(self):
         if self._mode not in ["r"]:
             raise RuntimeError(f"Not supported operation `read` for mode `{self._mode}` for stream source `{self._source}`")

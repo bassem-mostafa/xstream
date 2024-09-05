@@ -36,6 +36,52 @@ from xstream import StringIO
 ## #### Private Type(s) ########################################################
 ## #############################################################################
 
+class _frames_generator:
+    '''
+    frames generator
+    '''
+    def __init__(self, stream, start, stop, step):
+        '''
+        Initializes frames generator
+        args:
+            stream: represents the stream from which to generate frames
+            start: index of first frame to be generated
+            stop: index of just after last frame to be generated
+            step: index increment between two consecuitive generated frames
+        returns:
+            a frames generator
+        '''
+        self._stream = stream
+        self._start = start if start is not None else 0
+        self._stop = stop if stop is not None else len(stream)
+        self._step = step if step is not None else 1
+        self._length = (stop - start) / step
+    def __len__(self):
+        '''
+        Gets the frames generator total number of frames
+        returns:
+            total number of frames
+        '''
+        return self._length
+    def __iter__(self):
+        '''
+        Gets an iterator for the frames generator
+        returns:
+            a frames generator iterator
+        '''
+        return self
+    def __next__(self):
+        '''
+        Gets next frame of the iterator for the frames generator
+        returns:
+            next frame of the iterator
+        '''
+        if self._start >= self._stop:
+            raise StopIteration()
+        self._stream.seek(self._start)
+        self._start += self._step
+        return self._stream.read()
+
 ## #############################################################################
 ## #### Private Method(s) Prototype ############################################
 ## #############################################################################
@@ -73,63 +119,6 @@ class Stream:
         self._mode = None               # working mode, could be read, write, ...etc
         self._content = None            # content descriptor, handle for actual stream operations
         self._specifications = dict()   # specifications, could be any related specification ex: frame rate, number of frames, frame size, ...etc
-    def open(self, mode="r"):
-        '''
-        Opens the stream in specified mode
-        args:
-            mode: represents the mode for which the stream shall be opened for (default = 'r': for read-only)
-        returns:
-            True on a successful opening, False otherwise
-        '''
-        raise RuntimeError(f"Not supported {self.__class__.__name__} operation `open` for stream source `{self._source}`")
-        return False
-    def close(self):
-        '''
-        Closes the stream
-        returns:
-            True on a successful closing, False otherwise
-        '''
-        raise RuntimeError(f"Not supported {self.__class__.__name__} operation `close` for stream source `{self._source}`")
-        return False
-    def read(self):
-        '''
-        Reads a frame from the stream
-        returns:
-            a frame on success, None otherwise
-        '''
-        raise RuntimeError(f"Not supported {self.__class__.__name__} operation `read` for stream source `{self._source}`")
-        return None
-    def write(self, frame):
-        '''
-        Writes a frame into the stream
-        args:
-            frame: represents the frame for which to be written into the stream
-        returns:
-            True on success, False otherwise
-        '''
-        raise RuntimeError(f"Not supported {self.__class__.__name__} operation `write` for stream source `{self._source}`")
-        return False
-    def get(self, property):
-        '''
-        Gets specified property value of the stream
-        args:
-            property: represents the property for which to retrieve its value
-        returns:
-            property value on success, None otherwise
-        '''
-        raise RuntimeError(f"Not supported {self.__class__.__name__} operation `get` for stream source `{self._source}`")
-        return None
-    def set(self, property, value):
-        '''
-        Sets specified property value of the stream to specified value
-        args:
-            property: represents the property for which to set its value
-            value: represents the value to be set for the specified property
-        returns:
-            True on success, False otherwise
-        '''
-        raise RuntimeError(f"Not supported {self.__class__.__name__} operation `set` for stream source `{self._source}`")
-        return False
     def __len__(self):
         '''
         Gets the stream total number of frames
@@ -172,10 +161,17 @@ class Stream:
         args:
             key: represents the indices of corresponding frames to be fetched
         returns:
-            next frame of the iterator
+            frames of specified indices
         '''
-        raise RuntimeError(f"Not supported {self.__class__.__name__} operation `__getitem__` for stream source `{self._source}`")
-        return None
+        if not isinstance(key, (int, slice)):
+            raise RuntimeError(f"Not supported operation `__getitem__` for key `{key}` of type `{type(key)}` for stream source `{self._source}`")
+        result = None
+        if isinstance(key, int):
+            self.seek(key)
+            result = self.read()
+        elif isinstance(key, slice):
+            result = _frames_generator(self, key.start, key.stop, key.step)
+        return result
     def __getattr__(self, name):
         '''
         Controling the stream attributes' getting access
@@ -192,6 +188,71 @@ class Stream:
         if name in []:
             ... # TODO
         super().__setattr__(name, value)
+    def open(self, mode="r"):
+        '''
+        Opens the stream in specified mode
+        args:
+            mode: represents the mode for which the stream shall be opened for (default = 'r': for read-only)
+        returns:
+            True on a successful opening, False otherwise
+        '''
+        raise RuntimeError(f"Not supported {self.__class__.__name__} operation `open` for stream source `{self._source}`")
+        return False
+    def close(self):
+        '''
+        Closes the stream
+        returns:
+            True on a successful closing, False otherwise
+        '''
+        raise RuntimeError(f"Not supported {self.__class__.__name__} operation `close` for stream source `{self._source}`")
+        return False
+    def seek(self, index):
+        '''
+        Seeks to index into the stream
+        returns:
+            True on a successful seeking, False otherwise
+        '''
+        raise RuntimeError(f"Not supported {self.__class__.__name__} operation `seek` for stream source `{self._source}`")
+        return False
+    def read(self):
+        '''
+        Reads a frame from the stream
+        returns:
+            a frame on success, None otherwise
+        '''
+        raise RuntimeError(f"Not supported {self.__class__.__name__} operation `read` for stream source `{self._source}`")
+        return None
+    def write(self, frame):
+        '''
+        Writes a frame into the stream
+        args:
+            frame: represents the frame for which to be written into the stream
+        returns:
+            True on success, False otherwise
+        '''
+        raise RuntimeError(f"Not supported {self.__class__.__name__} operation `write` for stream source `{self._source}`")
+        return False
+    def get(self, property):
+        '''
+        Gets specified property value of the stream
+        args:
+            property: represents the property for which to retrieve its value
+        returns:
+            property value on success, None otherwise
+        '''
+        raise RuntimeError(f"Not supported {self.__class__.__name__} operation `get` for stream source `{self._source}`")
+        return None
+    def set(self, property, value):
+        '''
+        Sets specified property value of the stream to specified value
+        args:
+            property: represents the property for which to set its value
+            value: represents the value to be set for the specified property
+        returns:
+            True on success, False otherwise
+        '''
+        raise RuntimeError(f"Not supported {self.__class__.__name__} operation `set` for stream source `{self._source}`")
+        return False
 
 ## #############################################################################
 ## #### Public Method(s) #######################################################
