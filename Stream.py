@@ -130,6 +130,14 @@ class Stream:
         '''
         raise RuntimeError(f"Not supported {self.__class__.__name__} operation `set` for stream source `{self._source}`")
         return False
+    def __len__(self):
+        '''
+        Gets the stream total number of frames
+        returns:
+            total number of frames
+        '''
+        raise RuntimeError(f"Not supported {self.__class__.__name__} operation `__len__` for stream source `{self._source}`")
+        return None
     def __repr__(self):
         '''
         Describes the stream
@@ -158,6 +166,16 @@ class Stream:
         if frame is None:
             raise StopIteration()
         return frame
+    def __getitem__(self, key):
+        '''
+        Gets frames at indices equals to provided key
+        args:
+            key: represents the indices of corresponding frames to be fetched
+        returns:
+            next frame of the iterator
+        '''
+        raise RuntimeError(f"Not supported {self.__class__.__name__} operation `__getitem__` for stream source `{self._source}`")
+        return None
     def __getattr__(self, name):
         '''
         Controling the stream attributes' getting access

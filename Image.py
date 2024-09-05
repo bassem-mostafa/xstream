@@ -70,6 +70,8 @@ class Image(_Stream):
         self._specifications["frame-width"] = None
         self._specifications["frame-height"] = None
         self._specifications["frame-channels"] = None
+    def __len__(self):
+        return int(self._content.get(cv2.CAP_PROP_FRAME_COUNT))
     def open(self, mode="r"):
         if mode not in ["r", "w"]:
             raise ValueError(f"Not supported {self.__class__.__name__} operation `open` for mode `{mode}` for stream source `{self._source}`")

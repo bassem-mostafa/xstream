@@ -85,10 +85,14 @@ class XStream:
                 self._stream = _Image(source)
             elif extension in ["mp4", "avi"]:
                 self._stream = _Video(source)
+    def __len__(self):
+        return self._stream.__len__()
     def __iter__(self):
         return self._stream.__iter__()
     def __next__(self):
         return self._stream.__next__()
+    def __getitem__(self, i):
+        return self._stream.__getitem__(i)
     def __repr__(self):
         return self._stream.__repr__()
     def open(self, mode="r"):

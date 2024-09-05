@@ -7,7 +7,20 @@ X-Stream is a multi-source stream with a unified interface
 - [x] Internal/USB camera streams 
 - [x] Local video/image streams 
 - [ ] ... others to be supported 
+---
+# Tasks
 
+- [x] Support `__len__` to get total number of available frames.
+```Python
+print(len(stream))
+```
+- [x] Support `slice` of frames in addition to single frame extraction.
+```Python
+for frame in stream[1:20]:
+	...
+```
+- [ ] FIX youtube stream.
+- [ ] ...
 ---
 
 # Reference(s)

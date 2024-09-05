@@ -68,6 +68,8 @@ class HTTP(_Stream):
         self._specifications["frame-width"] = None
         self._specifications["frame-height"] = None
         self._specifications["frame-channels"] = None
+    def __len__(self):
+        return int(self._content.get(cv2.CAP_PROP_FRAME_COUNT))
     def open(self, mode="r"):
         if mode not in ["r"]:
             raise ValueError(f"Not supported operation `open` for mode `{mode}` for stream source `{self._source}`")

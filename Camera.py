@@ -67,6 +67,8 @@ class Camera(_Stream):
         self._specifications["frame-width"] = None
         self._specifications["frame-height"] = None
         self._specifications["frame-channels"] = None
+    def __len__(self):
+        return cv2.numpy.inf
     def open(self, mode="r"):
         if mode not in ["r"]:
             raise ValueError(f"Not supported operation `open` for mode `{mode}` for stream source `{self._source}`")
