@@ -55,7 +55,7 @@ class _frames_generator:
         self._start = start if start is not None else 0
         self._stop = stop if stop is not None else len(stream)
         self._step = step if step is not None else 1
-        self._length = (stop - start) / step
+        self._length = (self._stop - self._start) / self._step
     def __len__(self):
         '''
         Gets the frames generator total number of frames
