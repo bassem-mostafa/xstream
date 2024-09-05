@@ -62,7 +62,7 @@ class _frames_generator:
         returns:
             total number of frames
         '''
-        return self._length
+        return int(self._length)
     def __iter__(self):
         '''
         Gets an iterator for the frames generator
