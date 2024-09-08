@@ -97,6 +97,8 @@ class Video(_Stream):
     def close(self):
         self._content.release()
         self._content = None
+    def tell(self):
+        return int(self._content.get(cv2.CAP_PROP_POS_FRAMES))
     def seek(self, index):
         return self._content.set(cv2.CAP_PROP_POS_FRAMES, index)
     def read(self):

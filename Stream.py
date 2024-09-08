@@ -206,6 +206,14 @@ class Stream:
         '''
         raise RuntimeError(f"Not supported {self.__class__.__name__} operation `close` for stream source `{self._source}`")
         return False
+    def tell(self):
+        '''
+        Gets index position of the stream
+        returns:
+            Index position on a successful telling, None otherwise
+        '''
+        raise RuntimeError(f"Not supported {self.__class__.__name__} operation `tell` for stream source `{self._source}`")
+        return None
     def seek(self, index):
         '''
         Seeks to index into the stream

@@ -99,6 +99,8 @@ class XStream:
         return self._stream.open(mode)
     def close(self):
         return self._stream.close()
+    def tell(self):
+        return self._stream.tell()
     def seek(self, index):
         return self._stream.seek(index)
     def read(self):
