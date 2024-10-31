@@ -43,6 +43,7 @@ from .HTTP import HTTP as _HTTP
 from .HTTPS import HTTPS as _HTTPS
 from .Image import Image as _Image
 from .Video import Video as _Video
+from .Directory import Directory as _Directory
 
 from .XStream import XStream
 

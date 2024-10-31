@@ -22,10 +22,6 @@ Copyright 2024 BaSSeM
 ## #### Description ############################################################
 ## #############################################################################
 
-'''
-X-Stream class wraps various stream sources into unified interface
-'''
-
 ## #############################################################################
 ## #### Control Variable(s) ####################################################
 ## #############################################################################
@@ -34,16 +30,9 @@ X-Stream class wraps various stream sources into unified interface
 ## #### Import(s) ##############################################################
 ## #############################################################################
 
+from xstream import cv2
 from xstream import Path
-
 from xstream import _Stream
-from xstream import _Camera
-from xstream import _RTSP
-from xstream import _HTTP
-from xstream import _HTTPS
-from xstream import _Image
-from xstream import _Video
-from xstream import _Directory
 
 ## #############################################################################
 ## #### Private Type(s) ########################################################
@@ -69,47 +58,57 @@ from xstream import _Directory
 ## #### Public Type(s) #########################################################
 ## #############################################################################
 
-class XStream:
+class Directory(_Stream):
     def __init__(self, source):
-        self._stream = _Stream(source) # Abstract Stream
-        if isinstance(source, int):
-            self._stream = _Camera(source)
-        elif isinstance(source, str) and source.find(f"rtsp://", 0, len(f"rtsp://")) != -1:
-            self._stream = _RTSP(source)
-        elif isinstance(source, str) and source.find(f"http://", 0, len(f"http://")) != -1:
-            self._stream = _HTTP(source)
-        elif isinstance(source, str) and source.find(f"https://", 0, len(f"https://")) != -1:
-            self._stream = _HTTPS(source)
-        elif isinstance(source, (str, Path)):
-            extension = Path(source).suffix[1:].lower()
-            if extension in ["jpg", "jpeg", "jpe", "bmp", "png", "pbm", "pgm", "ppm", "pxm", "pnm"]:
-                self._stream = _Image(source)
-            elif extension in ["mp4", "avi"]:
-                self._stream = _Video(source)
-            elif Path(source).is_dir():
-                self._stream = _Directory(source)
+        super().__init__(source)
+        if not isinstance(self._source, (str, Path)):
+            raise RuntimeError(f"Not supported {self.__class__.__name__} source-type `{type(self._source)}`")
+        if not Path(self._source).is_dir():
+            raise RuntimeError(f"Not supported {self.__class__.__name__} source `{self._source}` is NOT directory")
+        self._type = "Media/Directory"
+        #----------------------------------
+        # TODO check the following specifications applicability
+        #----------------------------------
+        # self._specifications["frame-width"] = None
+        # self._specifications["frame-height"] = None
+        # self._specifications["frame-channels"] = None
     def __len__(self):
-        return self._stream.__len__()
-    def __iter__(self):
-        return self._stream.__iter__()
-    def __next__(self):
-        return self._stream.__next__()
-    def __getitem__(self, i):
-        return self._stream.__getitem__(i)
-    def __repr__(self):
-        return self._stream.__repr__()
+        return Path(self._source).glob(["*.jpg", "*.png"])
     def open(self, mode="r"):
-        return self._stream.open(mode)
+        if mode not in ["r", "w"]:
+            raise ValueError(f"Not supported {self.__class__.__name__} operation `open` for mode `{mode}` for stream source `{self._source}`")
+        self._mode = mode
+        status = Path(self._source).exists()
+        if self._mode in ["w"]:
+            status = True
+        return status
     def close(self):
-        return self._stream.close()
-    def tell(self):
-        return self._stream.tell()
-    def seek(self, index):
-        return self._stream.seek(index)
-    def read(self):
-        return self._stream.read()
-    def write(self, frame):
-        return self._stream.write(frame)
+        # Nothing to be done
+        return True
+    #----------------------------------
+    # TODO implement the following APIs
+    #----------------------------------
+    # def seek(self, index):
+    #     return False
+    # def read(self):
+    #     if self._mode not in ["r"]:
+    #         raise RuntimeError(f"Not supported operation `read` for mode `{self._mode}` for stream source `{self._source}`")
+    #     self._content = cv2.imread(str(self._source))
+    #     if self._content is not None:
+    #         self._specifications["frame-width"] = self._content.shape[1]
+    #         self._specifications["frame-height"] = self._content.shape[0]
+    #         self._specifications["frame-channels"] = self._content.shape[2] if len(self._content.shape) > 2 else 1
+    #     return self._content
+    # def write(self, frame):
+    #     if self._mode not in ["w"]:
+    #         raise RuntimeError(f"Not supported operation `write` for mode `{self._mode}` for stream source `{self._source}`")
+    #     self._content = frame
+    #     self._specifications["frame-width"] = self._content.shape[1]
+    #     self._specifications["frame-height"] = self._content.shape[0]
+    #     self._specifications["frame-channels"] = self._content.shape[2] if len(self._content.shape) > 2 else 1
+    #     if not cv2.imwrite(str(self._source), self._content):
+    #         raise RuntimeWarning(f"Couldn't complete operation `write` for mode `{self._mode}` for stream source `{self._source}`")
+    #     return True
 
 ## #############################################################################
 ## #### Public Method(s) #######################################################
@@ -125,7 +124,7 @@ class XStream:
 
 if __name__ == "__main__":
     ...
-
+    
 ## #############################################################################
 ## #### END OF FILE ############################################################
 ## #############################################################################
